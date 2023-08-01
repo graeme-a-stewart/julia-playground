@@ -1,5 +1,7 @@
 #! /usr/bin/env julia
 
+# This is a silly test file for testing the debugger in VS Code
+
 function main()
     a = 10
     b = 20
@@ -22,10 +24,9 @@ function main()
     end
 end
 
-# Safer to just run main() here
-# The issue is that running through the debugger actually has
-# ARGS[0] = "/Users/graemes/.vscode/extensions/julialang.language-julia-1.47.2/scripts/debugger/run_debugger.jl"
-# so then the program does nothing at all if it tests for
-# abspath(PROGRAM_FILE) == @__FILE__
-
-main()
+# The issue is that running through the debugger in VS Code actually has
+# ARGS[0] = "/some/path/.vscode/extensions/julialang.language-julia-1.47.2/scripts/debugger/run_debugger.jl",
+# so then the program does nothing at all if it only tests for abspath(PROGRAM_FILE) == @__FILE__
+if (abspath(PROGRAM_FILE) == @__FILE__) || (basename(PROGRAM_FILE) == "run_debugger.jl")
+	main()
+end
