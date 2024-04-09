@@ -4,70 +4,73 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 0cbe7f85-9967-4e91-9a05-c1920d627154
+# ╔═╡ 18bb3c2b-ea25-4e35-b48d-e1372303b76e
 using Plots
 
-# ╔═╡ fddfd970-f673-11ee-1981-0dd02488cbf0
-md"# Apocalyptic Numbers
+# ╔═╡ 7e3fb6ad-fcde-4c10-a45f-43191a120ed7
+using OffsetArrays
 
-Search for apocalyptic numbers, which are powers of 2, where the decimal representation of the number contains three consecutive 6s, i.e., $666$
+# ╔═╡ 61a283f7-375b-4094-b3c8-e4acf5b2f4c3
+using Printf
 
-[Numberphile Video](https://youtu.be/0LkBwCSMsX4?si=3SzF4NogSxxoOYSZ)"
+# ╔═╡ 3d3bf99c-f682-11ee-1a99-df32aecb81c0
+md"# Flexible Apocalyptic Numbers
 
-# ╔═╡ 8008e8c5-1c17-40da-89dd-b785899a48be
-"""Determine if a number has a given sequence"""
-function apocalypse(n::Number, seq = "666")
-    # This uses strings, which is probably not that fast
-    decimal_n = string(n)
-    return occursin(seq, decimal_n)
-end
+Search for powers of 2, where the decimal representation of the number contains some sequence of three given digits. Apocalyptic numbers would have three consecutive 6s, i.e., $666$, but there's nothing special about that sequence of digits, so search all of then from $000$ to $999$.
 
-# ╔═╡ 3e597e1b-1952-42d9-b877-2290edc64e9c
-# Start with the lowest n where the decimal result is 3 digits long
-start_n = 7
+[Numberphile Video on Apocalyptic Numbers](https://youtu.be/0LkBwCSMsX4?si=3SzF4NogSxxoOYSZ)"
 
-# ╔═╡ 2c6efd4c-3ac3-40a3-82d3-614cc283208f
-# As large as we want to go...
-# N.B. Above 29784 all numbers seem to be apocalypse numbers as there are so many digits
-# This is a conjecuture, not proven (see video at 10:00)
-final_n = 30000
+# ╔═╡ b88ec48b-4660-42cc-80d8-3374ec8db5c9
+md"First, calculate the string squences for $2^n$, up to $30\,000$"
 
-# ╔═╡ d82a5d4c-90b9-474e-8909-26d339e91d21
-apocalypse_powers = Int[]
-
-# ╔═╡ 834ca038-af27-4599-ba55-1f45a5456f5c
-i = big"2"^(start_n-1)
-
-# ╔═╡ 4c1fdc48-a489-4253-ac22-f0bba7b79065
-for n in start_n:final_n
-    i *= 2
-    if apocalypse(i)
-        println("2^$n is an apocalypse number")
-        push!(apocalypse_powers, n)
-    end
-end
-
-# ╔═╡ 55c3e9bb-9d11-41b4-8fad-2f92e8924dbf
+# ╔═╡ 585755a4-1634-4302-a561-dfc52f3e1f82
 begin
-	bin_width = 500
-	n_bins = ceil(Int, final_n/bin_width)
+	string_sequence=String[]
+	sizehint!(string_sequence, 30_000)
+	i = BigInt(2)
+	push!(string_sequence, string(i))
+	for n in 2:30_000
+		i *= 2
+		push!(string_sequence, string(i))
+	end
 end
 
-# ╔═╡ 73e25916-a982-4689-8329-8b33398cce02
-apocalypse_powers
+# ╔═╡ 814e6c72-5169-4fbe-a37b-5b0f0caacc09
+md"Now count the number of 'apocalyptic' matches for each 3 digit sequence"
 
-# ╔═╡ 5b197b9f-659f-47d7-8dba-c0ec293e6504
-	bins = range(0, n_bins*bin_width, n_bins+1)
+# ╔═╡ 99267830-873e-4c8e-8291-6f8fb5ef3b5a
+begin
+	v = zeros(Int, 1000)
+	n_apocalypse = OffsetArrays.Origin(0)(v)
+	for i in 0:999
+		str_i = @sprintf "%03d" i
+		count = 0
+		for power_string in string_sequence
+			occursin(str_i, power_string) && (n_apocalypse[i] += 1)
+		end
+	end
+end
+	
 
-# ╔═╡ 70990681-4147-47e0-acb4-58829ec7ec45
-histogram(apocalypse_powers, bins=bins)
+# ╔═╡ 28b29acb-9a48-473b-95b3-438814cf63d2
+plot(0:999, v, xlabel="Triple digit sequence", ylabel="Number of 'apocalypse' matches", label="")
+
+# ╔═╡ b2560af5-c899-4dac-a7ee-34719532394d
+for i in 0:999
+	if n_apocalypse[i] < 26500
+		println("""$(@sprintf "%03d" i) : $(n_apocalypse[i])""")
+	end
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
+OffsetArrays = "~1.13.0"
 Plots = "~1.40.3"
 """
 
@@ -77,7 +80,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "922b1e0e663ea407db48d77b24e0c5744902d68a"
+project_hash = "47019b50975aee67a92001585e8db43fd5486c0f"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -543,6 +546,17 @@ version = "1.0.2"
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
+
+[[deps.OffsetArrays]]
+git-tree-sha1 = "6a731f2b5c03157418a20c12195eb4b74c8f8621"
+uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+version = "1.13.0"
+
+    [deps.OffsetArrays.extensions]
+    OffsetArraysAdaptExt = "Adapt"
+
+    [deps.OffsetArrays.weakdeps]
+    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 
 [[deps.Ogg_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1125,17 +1139,15 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═fddfd970-f673-11ee-1981-0dd02488cbf0
-# ╠═0cbe7f85-9967-4e91-9a05-c1920d627154
-# ╠═8008e8c5-1c17-40da-89dd-b785899a48be
-# ╠═3e597e1b-1952-42d9-b877-2290edc64e9c
-# ╠═2c6efd4c-3ac3-40a3-82d3-614cc283208f
-# ╠═d82a5d4c-90b9-474e-8909-26d339e91d21
-# ╠═834ca038-af27-4599-ba55-1f45a5456f5c
-# ╠═4c1fdc48-a489-4253-ac22-f0bba7b79065
-# ╠═55c3e9bb-9d11-41b4-8fad-2f92e8924dbf
-# ╠═73e25916-a982-4689-8329-8b33398cce02
-# ╠═5b197b9f-659f-47d7-8dba-c0ec293e6504
-# ╠═70990681-4147-47e0-acb4-58829ec7ec45
+# ╟─3d3bf99c-f682-11ee-1a99-df32aecb81c0
+# ╠═18bb3c2b-ea25-4e35-b48d-e1372303b76e
+# ╠═7e3fb6ad-fcde-4c10-a45f-43191a120ed7
+# ╠═61a283f7-375b-4094-b3c8-e4acf5b2f4c3
+# ╟─b88ec48b-4660-42cc-80d8-3374ec8db5c9
+# ╠═585755a4-1634-4302-a561-dfc52f3e1f82
+# ╟─814e6c72-5169-4fbe-a37b-5b0f0caacc09
+# ╠═99267830-873e-4c8e-8291-6f8fb5ef3b5a
+# ╠═28b29acb-9a48-473b-95b3-438814cf63d2
+# ╠═b2560af5-c899-4dac-a7ee-34719532394d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
