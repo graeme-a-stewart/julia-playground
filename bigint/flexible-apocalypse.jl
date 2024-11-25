@@ -53,7 +53,7 @@ end
 	
 
 # ╔═╡ 28b29acb-9a48-473b-95b3-438814cf63d2
-plot(0:999, v, xlabel="Triple digit sequence", ylabel="Number of 'apocalypse' matches", label="", xticks=([0, 250, 500, 750, 999], ["000", "250", "500", "750", "999"]))
+plot(0:999, OffsetArrays.no_offset_view(n_apocalypse), xlabel="Triple digit sequence", ylabel="Number of 'apocalypse' matches", label="", xticks=([0, 250, 500, 750, 999], ["000", "250", "500", "750", "999"]))
 
 # ╔═╡ b2560af5-c899-4dac-a7ee-34719532394d
 for i in 0:999

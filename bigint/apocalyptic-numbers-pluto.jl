@@ -60,7 +60,7 @@ apocalypse_powers
 	bins = range(0, n_bins*bin_width, n_bins+1)
 
 # ╔═╡ 70990681-4147-47e0-acb4-58829ec7ec45
-histogram(apocalypse_powers, bins=bins)
+histogram(apocalypse_powers, bins=bins, ylabel="Number of apocalypse numbers\nin bin (of $(bin_width))", xlabel="n (power of 2)", label="")
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
